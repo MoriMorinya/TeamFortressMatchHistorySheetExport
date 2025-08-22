@@ -83,6 +83,100 @@ function parseHTML(html) {
     let matches = html.split("<th>Match ");
     matches.splice(0, 1);
     let alreadyin = [];
+    let competitive = [];
+    let casual = [];
+
+    for (let m in matches) {
+        let match = matches[m];
+        let obj = {};
+        let matchid = parseInt(match.split("</th>")[0]);
+        if (alreadyin.indexOf(matchid) != -1) {
+            continue;
+        }
+        alreadyin.push(matchid);
+
+        obj.id = matchid;
+        obj.conclusion = match.indexOf("<td>Reached Conclusion</td><td>Yes") != -1;
+        obj.is_comp = match.indexOf("Type</td><td>Competitive") != -1;
+        obj.map_index = parseInt(getEntry(match, "Map Index"));
+        obj.creationtime = getDate(match, "Match Creation Time");
+        obj.ip = getEntry(match, "Match IP");
+        obj.match_port = parseInt(getEntry(match, "Match Port"));
+        obj.datacenter = getEntry(match, "Datacenter");
+        obj.match_size = parseInt(getEntry(match, "Match Size"));
+        obj.join_time = getDate(match, "Join Time");
+        obj.party_id_at_join = getEntry(match, "Party ID at Join");
+        obj.team_at_join = getEntry(match, "Team at Join");
+        obj.ping_estimate_at_join = parseInt(getEntry(match, "Ping Estimate at Join"));
+        obj.joined_after_match_start = "Yes" == getEntry(match, "Joined After Match Start");
+        obj.time_in_queue = parseInt(getEntry(match, "Time in Queue"));
+        obj.match_end_time = getDate(match, "Match End Time");
+        obj.season_id = getEntry(match, "Season ID");
+        obj.match_status = parseInt(getEntry(match, "Match Status"));
+        obj.match_duration = parseInt(getEntry(match, "Match Duration"));
+        obj.red_team_final_score = parseInt(getEntry(match, "RED Team Final Score"));
+        obj.blu_team_final_score = parseInt(getEntry(match, "BLU Team Final Score"));
+        obj.winning_team = parseInt(getEntry(match, "Winning Team"));
+        obj.game_mode = parseInt(getEntry(match, "Game Mode"));
+        obj.win_reason = parseInt(getEntry(match, "Win Reason"));
+        obj.match_flags = getEntry(match, "Match Flags");
+        obj.match_included_bots = parseInt(getEntry(match, "Match Included Bots"));
+        obj.time_left_match = getDate(match, "Time Left Match");
+        obj.result_partyid = getEntry(match, "Result PartyID");
+        obj.result_team = parseInt(getEntry(match, "Result Team"));
+        obj.result_score = parseInt(getEntry(match, "Result Score"));
+        obj.result_ping = parseInt(getEntry(match, "Result Ping"));
+        obj.result_player_flags = getEntry(match, "Result Player Flags");
+        obj.result_displayed_rating = parseInt(getEntry(match, "Result Displayed Rating"));
+        obj.result_displayed_rating_change = parseInt(getEntry(match, "Result Displayed Rating Change"));
+        obj.result_rank = parseInt(getEntry(match, "Result Rank"));
+        obj.classes_played = parseInt(getEntry(match, "Classes Played"));
+        obj.kills = parseInt(getEntry(match, "Kills"));
+        obj.deaths = parseInt(getEntry(match, "Deaths"));
+        obj.damage = parseInt(getEntry(match, "Damage"));
+        obj.healing = parseInt(getEntry(match, "Healing"));
+        obj.support = parseInt(getEntry(match, "Support"));
+        obj.score_medal = parseInt(getEntry(match, "Score Medal"));
+        obj.kills_medal = parseInt(getEntry(match, "Kills Medal"));
+        obj.damage_medal = parseInt(getEntry(match, "Damage Medal"));
+        obj.healing_medal = parseInt(getEntry(match, "Healing Medal"));
+        obj.support_medal = parseInt(getEntry(match, "Support Medal"));
+        obj.leave_reason = parseInt(getEntry(match, "Leave Reason"));
+        obj.connection_time = getDate(match, "Connection Time");
+
+        if (obj.is_comp) {
+            competitive.push(obj);
+        } else {
+            casual.push(obj);
+        }
+    }
+
+    // Export each group separately
+    if (competitive.length) exportToCSV(competitive, "competitive.csv");
+    if (casual.length) exportToCSV(casual, "casual.csv");
+}
+
+
+// --- CSV export helper ---
+function exportToCSV(data, filename) {
+    if (!data || !data.length) return;
+
+    const keys = Object.keys(data[0]);
+    const rows = data.map(obj =>
+        keys.map(k => (obj[k] !== undefined && obj[k] !== null) ? obj[k] : "").join(",")
+    );
+    const csv = [keys.join(",")].concat(rows).join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+}
+
+    let matches = html.split("<th>Match ");
+    matches.splice(0, 1);
+    let alreadyin = [];
 
     for (let m in matches) {
         let match = matches[m];
@@ -146,10 +240,10 @@ function parseHTML(html) {
         } else {
             casual.push(obj);
         }
-    }
+    
 
-    canswitch = true;
-    renderStatistics();
+    
+    
 
 
 }
